@@ -1,0 +1,29 @@
+name: CD Pipeline
+
+on: 
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Deploy to AWS EC2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/goldenowl-app:latest
+            docker stop goldenowl-app || true
+            docker rm goldenowl-app || true
+
+            docker run -d --name goldenowl-app --restart unless-stopped -p 3000:3000 ${{ secrets.DOCKERHUB_USERNAME }}/goldenowl-app:latest
+
+            docker ps | grep goldenowl-app
