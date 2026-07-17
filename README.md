@@ -43,3 +43,74 @@ You should receive the following response:
 ```
 
 Are you ready to embark on this DevOps journey with us? 🚀 Best of luck with your assignment! 🌟
+
+# My Deployment 🚀
+
+This project implements a complete DevOps pipeline following modern best practices: code is automatically validated, containerized, and deployed to the cloud on every push with zero manual intervention.
+
+## Live URL
+- **EC2**: [`goldenowl-server`](http://54.251.64.50:3000)
+- **ALB**: [`goldenowl-alb`](http://goldenowl-alb-1521996269.ap-southeast-1.elb.amazonaws.com)
+- **DockerHub**: [`hwuxfuoc/goldenowl-app`](https://hub.docker.com/r/hwuxfuoc/goldenowl-app)
+
+## What I Built
+
+### 1. Dockerized the Node.js Application
+The Express app is packaged using a **multi-stage Docker build** with `node:18-alpine` as the base image. The multi-stage approach separates the build environment from the runtime image, resulting in a smaller, more secure final image.
+
+### 2. CI Pipeline (GitHub Actions)
+Triggers automatically on every push to `feature/**` branches and on pull requests to `master`. Each run goes through three sequential jobs:
+
+- **Lint**: ESLint validates code style and catches syntax issues early
+- **Test**: Jest runs all unit tests to ensure business logic is correct
+- **Build & Push**: Docker image is built and pushed to DockerHub with both a `latest` tag and a commit SHA tag for traceability
+
+### 3. CD Pipeline (GitHub Actions)
+Triggers automatically when a pull request is merged into `master`. The pipeline:
+
+1. SSHes into the AWS EC2 instance using a stored private key
+2. Pulls the latest Docker image from DockerHub
+3. Stops and removes the existing container
+4. Starts a new container with `--restart unless-stopped` for auto-recovery on reboot
+
+### 4. Infrastructure
+- **AWS EC2** (`t3.micro`, Ubuntu 22.04): Hosts the containerized Node.js application on port 3000
+- **AWS ALB** (Application Load Balancer): Accepts public HTTP traffic on port 80 and forwards it to the EC2 target group
+- **AWS Auto Scaling Group**: Maintains a desired capacity of 2 instances, scales up to 4 when CPU exceeds 70%, and scales back down when load drops
+
+## Architecture Diagram
+End-to-end overview of the CI/CD pipeline and AWS infrastructure.
+
+![CI/CD Flow](./diagrams/ci-cd-infrastructure.png)
+
+## CI/CD in Action
+GitHub Actions workflows running automatically on push and merge events.
+
+![CI Pipeline](./diagrams/ci-pipeline.png)
+![CD Pipeline](./diagrams/cd-pipeline.png)
+
+## Docker Registry
+Image is automatically built and pushed to DockerHub on every CI run.
+
+![DockerHub](./diagrams/dockerhub.png)
+
+## AWS Infrastructure
+### EC2 Instance
+Ubuntu 22.04 on `t3.micro`, running the app inside a Docker container on port 3000.
+
+![EC2 Instance](./diagrams/aws-ec2.png)
+
+### Application Load Balancer
+Internet-facing ALB listening on port 80, forwarding traffic to EC2 instances on port 3000.
+
+![ALB](./diagrams/aws-alb.png)
+
+### Auto Scaling Group
+Scales EC2 instances between 1–4 based on CPU usage. Desired capacity: 2.
+
+![Auto Scaling Group](./diagrams/aws-asg.png)
+
+### Target Group (Healthy Instances)
+Health check on `GET /` — instances must return 200 to receive traffic.
+
+![Target Group](./diagrams/aws-target-group.png)
