@@ -51,6 +51,9 @@ Are you ready to embark on this DevOps journey with us? 🚀 Best of luck with y
 - **ALB**: [`goldenowl-alb`](http://goldenowl-alb-1521996269.ap-southeast-1.elb.amazonaws.com)
 - **DockerHub**: [`hwuxfuoc/goldenowl-app`](https://hub.docker.com/r/hwuxfuoc/goldenowl-app)
 
+![EC2 Response](./diagrams/ec2.png)
+![ALB Response](./diagrams/alb.png)
+
 ## What I Built
 
 ### 1. Dockerized the Node.js Application
